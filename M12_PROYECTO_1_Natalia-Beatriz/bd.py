@@ -161,7 +161,7 @@ def borrarCentroEducacion(id_educacion):
 
 # GET Sanidad
 
-def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio, id_sanidad):
+def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio, id_sanidad=None):
     db = conectarDB()
 
     if not db:
@@ -171,24 +171,37 @@ def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio, i
 
     try:
         if codigo_postal_sanidad is None and nombre_sanidad is None and nombre_barrio is None and id_sanidad is None:
+            # Consulta para obtener todos los centros sanitarios
             consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad'
             cursor.execute(consulta)
         else:
-            if nombre_sanidad and nombre_barrio:
-                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s AND nombre_barrio = %s and id_sanidad = %s'
-                cursor.execute(consulta, (id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio))
-            elif nombre_sanidad:
-                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s'
-                cursor.execute(consulta, (codigo_postal_sanidad, nombre_sanidad))
-            elif nombre_barrio:
-                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_barrio = %s'
-                cursor.execute(consulta, (codigo_postal_sanidad, nombre_barrio))
-            else:
-                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND id_sanidad = %s'
-                cursor.execute(consulta, (codigo_postal_sanidad, id_sanidad))
-        
+            condiciones = []
+            valores = []
+
+            if id_sanidad:
+                condiciones.append("id_sanidad = %s")
+                valores.append(id_sanidad)
+
+            if codigo_postal_sanidad:
+                condiciones.append("codigo_postal_sanidad = %s")
+                valores.append(codigo_postal_sanidad)
+
+            if nombre_sanidad:
+                condiciones.append("nombre_sanidad = %s")
+                valores.append(nombre_sanidad)
+
+            if nombre_barrio:
+                condiciones.append("nombre_barrio = %s")
+                valores.append(nombre_barrio)
+
+            consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad'
+            
+            if condiciones:
+                consulta += ' WHERE ' + ' AND '.join(condiciones)
+
+            cursor.execute(consulta, tuple(valores))
+
         resultado_sanidad = cursor.fetchall()
-        
 
     except mysql.Error as error:
         print(f"Error en consulta: {error}")
@@ -199,6 +212,7 @@ def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio, i
         db.close()
 
     return resultado_sanidad
+
 
 # POST Sanidad
 
@@ -272,5 +286,6 @@ def borrarCentroSanidad(id_sanidad):
     finally:
         cursor.close()
         db.close()
+
 
     return {"--CENTRO DE SANIDAD ELIMINADO--"}
