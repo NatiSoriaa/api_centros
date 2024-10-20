@@ -29,20 +29,21 @@ def ObtenerCentroEducacion():
 
     # GET: obtener centro educativo
     if request.method == 'GET':
+        idEd = request.args.get('id_educacion')
         codigoPostalE = request.args.get('codigo_postal_educacion')
         nombreE = request.args.get('nombre_educacion')
         fechaInicioE = request.args.get('fecha_inicio')
 
         # Si no se proporciona ningún filtro, devolver todos los centros
-        if not codigoPostalE and not nombreE and not fechaInicioE:
-            respuesta = llamadaCentroEducacion(None, None, None)  # Llamada sin parámetros
+        if not codigoPostalE and not nombreE and not fechaInicioE and not idEd:
+            respuesta = llamadaCentroEducacion(None, None, None, None)  # Llamada sin parámetros
             if respuesta:
                 return jsonify(respuesta), 200
             else:
                 return jsonify({"error": "No se encuentran centros educativos"}), 404
 
         # Si hay filtros, se pasa a la función con los parámetros
-        respuestaE = llamadaCentroEducacion(codigoPostalE, nombreE, fechaInicioE)
+        respuestaE = llamadaCentroEducacion(idEd, codigoPostalE, nombreE, fechaInicioE)
         if respuestaE:
             return jsonify(respuestaE), 200
         else:
@@ -52,15 +53,13 @@ def ObtenerCentroEducacion():
     elif request.method == 'POST':
         data = request.get_json()
         nombreE = data.get('nombre_educacion')
-        codigoPostalE = data.get('codigo_postal_educacion')
-        fechaInicioE = data.get('fecha_inicio')
 
         # Validar campos requeridos
-        if not nombreE or not codigoPostalE or not fechaInicioE:
+        if not nombreE:
             return jsonify({"error": "faltan campos requeridos"}), 400
 
         try:
-            insertarCentroEducacion(nombreE, codigoPostalE, fechaInicioE)
+            insertarCentroEducacion(nombreE)
             return jsonify({"mensaje": "Centro educativo agregado"}), 201
         except ValueError as error:
             return jsonify({"error": "error al agregar"}), 500
@@ -68,16 +67,16 @@ def ObtenerCentroEducacion():
     # PUT: actualizar fecha de inicio del centro educativo
     elif request.method == 'PUT':
         data = request.get_json()
-        IdCentro = data.get('id_educacion')  
-        nuevaFecha = data.get('fecha_inicio')
+        IdCentroEd = data.get('id_educacion')  
+        nombreEd = data.get('nombre_educacion')
 
         # Validar campos requeridos
-        if not IdCentro or not nuevaFecha:
+        if not IdCentroEd or not nombreEd:
             return jsonify({"mensaje": "faltan campos requeridos"}), 400
 
         try:
-            actualizarCentroEducacion(IdCentro, nuevaFecha)
-            return jsonify({"mensaje": "Fecha de inicio actualizada"}), 200
+            actualizarCentroEducacion(IdCentroEd, nombreEd)
+            return jsonify({"mensaje": "id y nombre del centro de educacion actualizados"}), 200
         except ValueError as error:
             return jsonify({"error": "error al actualizar"}), 500
 
@@ -97,6 +96,7 @@ def ObtenerCentroEducacion():
             return jsonify({"error": "error al borrar"}), 500
 
 
+
 # RUTA A CENTRO SANIDAD
 
 
@@ -108,10 +108,11 @@ def ObtenerCentroSanidad():
     
     # GET: obtener centro sanitario
     if request.method == 'GET':
+        idSa = request.args.get('id_sanidad')
         codigoPostalS = request.args.get('codigo_postal_sanidad')
         nombreS = request.args.get('nombre_sanidad')
         barrioS = request.args.get('nombre_barrio')
-        respuestaS = llamadaCentroSanidad(codigoPostalS, nombreS, barrioS)
+        respuestaS = llamadaCentroSanidad(codigoPostalS, nombreS, barrioS, idSa)
         if respuestaS is not None:
             return jsonify(respuestaS), 200
         else:
@@ -134,12 +135,13 @@ def ObtenerCentroSanidad():
     elif request.method == 'PUT':
         data = request.get_json()
         idSanidad = data.get('id_sanidad')
+        nombreSa = data.get('nombre_sanidad')
 
-        if not idSanidad:
+        if not idSanidad or not nombreSa:
             return jsonify({"error": "faltan campos requeridos"}), 400
         try:
-            actualizarCentroSanidad(idSanidad)
-            return jsonify ({"mensaje": "nombre del barrio actualizado"}), 200
+            actualizarCentroSanidad(idSanidad, nombreSa)
+            return jsonify ({"mensaje": "nombre del centro sanidad e ID actualizados"}), 200
         except ValueError as error:
             return jsonify({"error": "error al actualizar"}), 500
         

@@ -22,7 +22,7 @@ def conectarDB():
 
 # GET Educacion
 
-def llamadaCentroEducacion(codigo_postal_educacion, nombre_educacion, fecha_inicio):
+def llamadaCentroEducacion(id_educacion, codigo_postal_educacion, nombre_educacion, fecha_inicio):
     db = conectarDB()
 
     if not db:
@@ -31,14 +31,18 @@ def llamadaCentroEducacion(codigo_postal_educacion, nombre_educacion, fecha_inic
     cursor = db.cursor(dictionary=True)
 
     try:
-        if codigo_postal_educacion is None and nombre_educacion is None and fecha_inicio is None:
+        if codigo_postal_educacion is None and nombre_educacion is None and fecha_inicio is None and id_educacion is None:
             # Consulta para obtener todos los centros educativos
-            consulta = 'SELECT codigo_postal_educacion, nombre_educacion, fecha_inicio FROM centro_educacion'
+            consulta = 'SELECT id_educacion, codigo_postal_educacion, nombre_educacion, fecha_inicio FROM centro_educacion'
             cursor.execute(consulta)
         else:
             # Generación de condiciones para la consulta
             condiciones = []
             valores = []
+
+            if id_educacion:
+                condiciones.append("id_educacion = %s")
+                valores.append(id_educacion)
 
             if codigo_postal_educacion:
                 condiciones.append("codigo_postal_educacion = %s")
@@ -52,7 +56,7 @@ def llamadaCentroEducacion(codigo_postal_educacion, nombre_educacion, fecha_inic
                 condiciones.append("fecha_inicio = %s")
                 valores.append(fecha_inicio)
 
-            consulta = 'SELECT codigo_postal_educacion, nombre_educacion, fecha_inicio FROM centro_educacion'
+            consulta = 'SELECT id_educacion, codigo_postal_educacion, nombre_educacion, fecha_inicio FROM centro_educacion'
             
             if condiciones:
                 consulta += ' WHERE ' + ' AND '.join(condiciones)
@@ -72,7 +76,7 @@ def llamadaCentroEducacion(codigo_postal_educacion, nombre_educacion, fecha_inic
 
 # POST Educacion
 
-def insertarCentroEducacion(nombre_educacion, nombre_barrio):
+def insertarCentroEducacion(nombre_educacion):
     db = conectarDB()
 
     if not db:
@@ -81,8 +85,8 @@ def insertarCentroEducacion(nombre_educacion, nombre_barrio):
     cursor = db.cursor(dictionary=True)
 
     try:
-        consulta = "INSERT INTO centro_educacion (nombre_educacion, nombre_barrio) VALUES (%s, %s)"
-        cursor.execute(consulta, (nombre_educacion, nombre_barrio))
+        consulta = "INSERT INTO centro_educacion (nombre_educacion) VALUES (%s)"
+        cursor.execute(consulta, (nombre_educacion,))
         db.commit()
 
         if cursor.rowcount > 0:
@@ -99,11 +103,11 @@ def insertarCentroEducacion(nombre_educacion, nombre_barrio):
         cursor.close()
         db.close()
 
-    return {"--CENTRO DE EDUCACION INSERTADO--"}
+        return {"--CENTRO DE EDUCACION INSERTADO--"}
 
 # PUT Educacion
 
-def actualizarCentroEducacion(id_educacion, fecha_inicio):
+def actualizarCentroEducacion(id_educacion, nombre_educacion):
     db = conectarDB()
 
     if not db:
@@ -112,8 +116,8 @@ def actualizarCentroEducacion(id_educacion, fecha_inicio):
     cursor = db.cursor(dictionary=True)
     
     try:
-        consulta = "UPDATE centro_educacion SET fecha_inicio = %s WHERE id_educacion = %s"
-        cursor.execute(consulta, (fecha_inicio, id_educacion))
+        consulta = "UPDATE centro_educacion SET nombre_educacion = %s WHERE id_educacion = %s"
+        cursor.execute(consulta, (nombre_educacion, id_educacion))
         db.commit()
 
     except mysql.Error as error:
@@ -128,7 +132,7 @@ def actualizarCentroEducacion(id_educacion, fecha_inicio):
 
 # DELETE educacion
 
-def borrarCentroEducacion(id_educacion, nombre_educacion):
+def borrarCentroEducacion(id_educacion):
     db = conectarDB()
 
     if not db:
@@ -140,9 +144,6 @@ def borrarCentroEducacion(id_educacion, nombre_educacion):
         if id_educacion:
             consulta = "DELETE FROM centro_educacion WHERE id_educacion = %s"
             cursor.execute(consulta, (id_educacion,))
-        elif nombre_educacion:
-            consulta = "DELETE FROM centro_educacion WHERE nombre_educacion = %s"
-            cursor.execute(consulta, (nombre_educacion,))
         db.commit()
 
     except mysql.Error as error:
@@ -160,7 +161,7 @@ def borrarCentroEducacion(id_educacion, nombre_educacion):
 
 # GET Sanidad
 
-def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio):
+def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio, id_sanidad):
     db = conectarDB()
 
     if not db:
@@ -169,22 +170,22 @@ def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio):
     cursor = db.cursor(dictionary=True)
 
     try:
-        if codigo_postal_sanidad is None and nombre_sanidad is None and nombre_barrio is None:
-            consulta = 'SELECT codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad'
+        if codigo_postal_sanidad is None and nombre_sanidad is None and nombre_barrio is None and id_sanidad is None:
+            consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad'
             cursor.execute(consulta)
         else:
             if nombre_sanidad and nombre_barrio:
-                consulta = 'SELECT codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s AND nombre_barrio = %s'
-                cursor.execute(consulta, (codigo_postal_sanidad, nombre_sanidad, nombre_barrio))
+                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s AND nombre_barrio = %s and id_sanidad = %s'
+                cursor.execute(consulta, (id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio))
             elif nombre_sanidad:
-                consulta = 'SELECT codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s'
+                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_sanidad = %s'
                 cursor.execute(consulta, (codigo_postal_sanidad, nombre_sanidad))
             elif nombre_barrio:
-                consulta = 'SELECT codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_barrio = %s'
+                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND nombre_barrio = %s'
                 cursor.execute(consulta, (codigo_postal_sanidad, nombre_barrio))
             else:
-                consulta = 'SELECT codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s'
-                cursor.execute(consulta, (codigo_postal_sanidad,))
+                consulta = 'SELECT id_sanidad, codigo_postal_sanidad, nombre_sanidad, nombre_barrio FROM centro_sanidad WHERE codigo_postal_sanidad = %s AND id_sanidad = %s'
+                cursor.execute(consulta, (codigo_postal_sanidad, id_sanidad))
         
         resultado_sanidad = cursor.fetchall()
         
@@ -201,7 +202,7 @@ def llamadaCentroSanidad(codigo_postal_sanidad, nombre_sanidad, nombre_barrio):
 
 # POST Sanidad
 
-def insertarCentroSanidad(nombre_sanidad, nombre_barrio):
+def insertarCentroSanidad(nombre_sanidad):
     db = conectarDB()
 
     if not db:
@@ -210,8 +211,8 @@ def insertarCentroSanidad(nombre_sanidad, nombre_barrio):
     cursor = db.cursor(dictionary=True)
 
     try:
-        consulta = "INSERT INTO centro_sanidad (nombre_sanidad, nombre_barrio) VALUES (%s, %s)"
-        cursor.execute(consulta, (nombre_sanidad, nombre_barrio))
+        consulta = "INSERT INTO centro_sanidad (nombre_sanidad) VALUES (%s)"
+        cursor.execute(consulta, (nombre_sanidad))
         db.commit()
 
     except mysql.Error as error:
@@ -226,7 +227,7 @@ def insertarCentroSanidad(nombre_sanidad, nombre_barrio):
 
 # PUT Sanidad
 
-def actualizarCentroSanidad(nombre_sanidad, nombre_barrio, codigo_postal_sanidad):
+def actualizarCentroSanidad(nombre_sanidad, id_sanidad):
     db = conectarDB()
 
     if not db:
@@ -235,8 +236,8 @@ def actualizarCentroSanidad(nombre_sanidad, nombre_barrio, codigo_postal_sanidad
     cursor = db.cursor(dictionary=True)
 
     try:
-        consulta = "UPDATE centro_sanidad SET nombre_sanidad = %s, nombre_barrio = %s WHERE codigo_postal_sanidad = %s"
-        cursor.execute(consulta, (nombre_sanidad, nombre_barrio, codigo_postal_sanidad))
+        consulta = "UPDATE centro_sanidad SET nombre_sanidad = %s, id_sanidad = %s WHERE codigo_postal_sanidad = %s"
+        cursor.execute(consulta, (nombre_sanidad, id_sanidad))
         db.commit()
 
     except mysql.Error as error:
@@ -251,7 +252,7 @@ def actualizarCentroSanidad(nombre_sanidad, nombre_barrio, codigo_postal_sanidad
 
 # DELETE Sanidad
 
-def borrarCentroSanidad(codigo_postal_sanidad):
+def borrarCentroSanidad(id_sanidad):
     db = conectarDB()
 
     if not db:
@@ -260,8 +261,8 @@ def borrarCentroSanidad(codigo_postal_sanidad):
     cursor = db.cursor(dictionary=True)
 
     try:
-        consulta = "DELETE FROM centro_sanidad WHERE codigo_postal_sanidad = %s"
-        cursor.execute(consulta, (codigo_postal_sanidad,))
+        consulta = "DELETE FROM centro_sanidad WHERE id_sanidad = %s"
+        cursor.execute(consulta, (id_sanidad,))
         db.commit()
 
     except mysql.Error as error:
